@@ -1,0 +1,50 @@
+services:
+  zoo1:
+    image: zookeeper:3.9
+    restart: always
+    hostname: zoo1
+    volumes:
+      - type: volume
+        source: zoo1-data
+        target: /data
+    ports:
+      - "127.0.0.1:${ATALANTA_CE_ZK1_PORT:-2281}:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+  zoo2:
+    image: zookeeper:3.9
+    restart: always
+    hostname: zoo2
+    volumes:
+      - type: volume
+        source: zoo2-data
+        target: /data
+    ports:
+      - "127.0.0.1:${ATALANTA_CE_ZK2_PORT:-2282}:2181"
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+  zoo3:
+    image: zookeeper:3.9
+    restart: always
+    hostname: zoo3
+    volumes:
+      - type: volume
+        source: zoo3-data
+        target: /data
+    ports:
+      - "127.0.0.1:${ATALANTA_CE_ZK3_PORT:-2283}:2181"
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+volumes:
+  zoo1-data:
+    name: atalanta-ce-zoo1-data
+  zoo2-data:
+    name: atalanta-ce-zoo2-data
+  zoo3-data:
+    name: atalanta-ce-zoo3-data

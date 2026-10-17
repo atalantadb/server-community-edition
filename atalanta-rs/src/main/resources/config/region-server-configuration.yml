@@ -1,0 +1,40 @@
+zooKeeperConfiguration:
+  connectionString: {{zookeeperConnectionString}}  # Comma-separated list of ZooKeeper hosts (host:port)
+  connectionBasePath: {{zooKeeperBasePath}}        # Base path in ZooKeeper for storing cluster metadata
+  connectionRetryTimes: 5          # Curator retry count for failed ZooKeeper operations
+  connectionRetrySleepMs: 1_000    # Delay between Curator retries (ms)
+  sessionTimeoutMs: 45_000         # Requested ZooKeeper session timeout and Curator connection timeout (ms)
+rsDirs: # RegionServer data directories, different RS instances must not share the same directory
+  - {{rsDir}}
+grpcConfiguration:
+  regionServerPort: 8585                # Port on which RS listens for gRPC connections
+  threadPoolSize: 512                   # gRPC server executor threads, administrative task queues/executors are separate
+  activeProcessingRequests: 100_000     # Dispatcher threshold: half per task category (progressed/functionalized), not a queue bound or strict global cap
+  grpcRequestsMonitoringEnabled: true   # Log running/queued administrative task counters every second
+  receiveRegionTimeoutMs: 600_000       # TCP receive inactivity timeout, RS-to-RS progressed response wait budget, and snapshot-chunk RPC deadline (ms)
+  regionServerConnectTimeoutMs: 15000        # RS-to-RS gRPC/TCP connect timeout and TCP transfer accept timeout (ms)
+  regionServerDisconnectTimeoutMs: 5000      # Currently unused, does not control channel shutdown
+masterConfiguration:
+  connectionRetryLimit: 5                    # Maximum master request attempts, including the initial attempt
+  connectionRequestTimeoutMs: 10000          # TCP connect timeout and delay between failed master request attempts (ms), not an RPC deadline
+  progressCalculatorIntervalMs: 10000        # Progress reporting/final-result retry interval (ms), match master grpcConfiguration.rsProgressCalculatorIntervalMs
+  progressCalculatorAbortTimeoutMs: 300000   # Budget for failed progress or final-result/error delivery (ms), not a maximum operation duration
+  replicationFactor: 3            # Total replicas per region; must match master and core replication factors
+coreConfiguration:
+  connectionRetryTimes: 15        # Maximum core command attempts, including the initial attempt
+  connectionRetrySleepMs: 5000    # Delay between failed core command attempts (ms)
+  host: localhost                 # Hostname for core services
+  rsPort: 20001                   # Core administrative port; must match rs_port in the core configuration
+  clientPort: 14444               # Core data/client port; must match client_port in the core configuration
+  socketTimeoutMs: 999999999      # Core socket read timeout (ms); not a connect timeout or total operation deadline
+healthCheckerConfiguration:
+  initialDelaySecs: 10            # Delay before the first ZooKeeper registration/status self-check (seconds)
+  delaySecs: 1                    # Delay after each completed ZooKeeper registration/status self-check (seconds)
+  coreName: atalanta_r            # Core configuration basename without .prop; used to identify the OS process
+  coreCheckIntervalMs: 60000      # Initial delay and delay after each completed core health check (ms); don't decrease
+  coreTimeoutMs: 180000           # Core health response wait timeout (ms); failed/timed-out checks terminate the core and RS; don't decrease
+dataConfiguration:
+  splitSourceBackupEnabled: false                # Enable backup of source data during region splits
+  splitSourceBackupDir: {{rsDir}}/bkp            # Backup destination when splitSourceBackupEnabled is true
+  simpleRegionDistributionThresholdPercent: 10   # If all disks are below this used-space percentage, place by replica counts; otherwise use weighted placement
+  keepOrphanHours: 24                            # Delete orphan replicas on a periodic cleanup when their age in whole hours exceeds this value

@@ -1,0 +1,144 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>ATALANTA Web UI</title>
+
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/${bootstrap.version}/css/bootstrap.min.css} "/>
+    <link rel="stylesheet" th:href="@{/webjars/datatables/${datatables.version}/css/dataTables.bootstrap5.min.css}">
+
+</head>
+<body>
+
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<div class="jumbotron">
+
+    <div th:if="${zkConnectionStatus}" class="card">
+        <div class="card-header">
+            <h3>Zookeeper</h3>
+        </div>
+        <div class="card-body">
+            <h5 th:text="'Connection string: ' + ${zkConnectionString}"/>
+        </div>
+    </div>
+    <div th:if="${zkConnectionStatus}" class="card pb-15">
+        <div class="card-header">
+            <h3>FMaster</h3>
+        </div>
+        <div class="card-body">
+            <h5>Leader: <span class="badge bg-primary" th:text="${fmasterLeader}"/></h5>
+            <h5>Ping: <span class="badge bg-success" th:if="${fmasterPing}">ok</span>
+                <span class="badge bg-danger" th:unless="${fmasterPing}">error</span></h5>
+            <h5>Start progress:</h5>
+            <th:block th:each="info: ${fmasterStat.masterStartMsgList}">
+                <li><strong><span th:text="${info.name}"/></strong>
+                    <span th:text="${info.msg}"/>
+                </li>
+            </th:block>
+        </div>
+    </div>
+    <div th:if="${zkConnectionStatus}" class="card pb-3">
+        <div class="card-header">
+            <h3>Leader election</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">url</th>
+                    <th scope="col">role</th>
+                </tr>
+                </thead>
+                <tr th:each="fl : ${fmasterFollowers}">
+                    <td><h5 th:text="${fl.znodeNbr}"/></td>
+                    <td><h5 th:text="${fl.url}"/></td>
+                    <td><h5><span th:if="${fl.leader}" class="badge bg-success" th:text="'leader v.' + ${fmasterBuild}"/></h5>
+                        <h5><span th:unless="${fl.leader}" class="badge rounded-pill bg-info text-dark">follower</span></h5></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div th:if="${zkConnectionStatus}" class="card pb-3">
+        <div class="card-header">
+            <h3>Region servers(<span class="badge rounded-pill bg-success" th:text="${(regionServers?.size() ?: 0) - (rsInitCount ?: 0) - (rsStoppedCount ?: 0)}"/>
+                <span class="badge rounded-pill bg-warning text-dark" th:text="${rsInitCount}"/>
+                <span class="badge rounded-pill bg-danger text-dark" th:text="${rsStoppedCount}"/>)
+            </h3>
+            <h3>replicas: <span class="badge rounded-pill bg-info text-dark" th:text="${regionServerCount}"/>
+                (<span th:text="${regionServerCountFollower1}"/>,
+                <span th:text="${regionServerCountFollower2}"/>)
+                disk: <span class="badge rounded-pill bg-info text-dark" th:text="${regionServerDiskSize}"/>
+                rows: <span class="badge rounded-pill bg-info text-dark" th:text="${regionServerRows}"/>
+                mem: <span class="badge rounded-pill bg-info text-dark" th:text="${regionServerMem}"/>
+                get: <span class="badge rounded-pill bg-info text-dark" th:text="${regionServerGet}"/>
+                put: <span class="badge rounded-pill bg-info text-dark" th:text="${regionServerPut}"/>
+                del: <span class="badge rounded-pill bg-info text-dark" th:text="${regionServerDel}"/>
+            </h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped" id="rsDataTable">
+                <thead>
+                <tr>
+                    <th scope="col">Host</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Core port</th>
+                    <th scope="col">Jmx port</th>
+                    <th scope="col">Replicas</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Rows</th>
+                    <th scope="col">Mem usage</th>
+                    <th scope="col">Get</th>
+                    <th scope="col">Put</th>
+                    <th scope="col">Del</th>
+                    <th scope="col">Disk (min)</th>
+                    <th scope="col">Version</th>
+                </tr>
+                </thead>
+                <th:block th:each="rs: ${regionServers}">
+                    <tr th:class="${rs.cssClass}">
+                        <td><h5><a  th:href="'/rs?name=' + ${rs.name}" th:text="${rs.host} + ':' + ${rs.javaPort}"></a></h5></td>
+                        <td><h5 th:text="${rs.name}"/></td>
+                        <td><h5 th:text="${rs.rsStatus}"/></td>
+                        <td><h5 th:text="${rs.coreClientPort}"/></td>
+                        <td><h5 th:text="${rs.jmxPort}"/></td>
+                        <td><h5 th:text="${rs.regionServerMetrics.regionCount} + '(' + ${rs.regionServerMetrics.regionCountFollower1} + ',' + ${rs.regionServerMetrics.regionCountFollower2} + ')'"/></td>
+                        <td><h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(rs.regionServerMetrics.sizeTotal)}"/></td>
+                        <td><h5 th:text="${rs.regionServerMetrics.keysTotal}"/></td>
+                        <td><h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(rs.regionServerMetrics.memUsageBytesTotal)}"/></td>
+                        <td><h5 th:text="${rs.regionServerMetrics.countGetTotal}"/></td>
+                        <td><h5 th:text="${rs.regionServerMetrics.countPutTotal}"/></td>
+                        <td><h5 th:text="${rs.regionServerMetrics.countDelTotal}"/></td>
+                        <td><h5 th:text="${rs.minDiskInfo}"/></td>
+                        <td><h5 th:text="${rs.regionServerMetrics.versionInfo.build}"/></td>
+                    </tr>
+                </th:block>
+            </table>
+        </div>
+    </div>
+    <div th:unless="${zkConnectionStatus}" class="alert alert-danger pb-3" role="alert">
+        <h3 th:text="'Cannot connect to Zookeeper: ' + ${zkConnectionString}"/>
+    </div>
+
+</div>
+
+<script type="text/javascript" th:src="@{/webjars/jquery/${jquery.version}/jquery.min.js}"></script>
+<script type="text/javascript" th:src="@{/webjars/datatables/${datatables.version}/js/dataTables.min.js}"></script>
+<script type="text/javascript" th:src="@{/webjars/popper.js/1.12.9-1/umd/popper.min.js}"></script>
+<script type="text/javascript" th:src="@{/webjars/bootstrap/${bootstrap.version}/js/bootstrap.min.js}"></script>
+
+
+<script  th:inline="javascript">
+    $(document).ready( function () {
+        $('#rsDataTable').DataTable({
+            pageLength: 100,
+            lengthMenu: [
+                [10, 25, 50, 100, 1000, -1],
+                [10, 25, 50, 100, 1000, 'All']
+            ] });
+    } );
+</script>
+</body>
+</html>

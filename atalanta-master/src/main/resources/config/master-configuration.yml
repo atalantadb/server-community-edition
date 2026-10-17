@@ -1,0 +1,52 @@
+zooKeeperConfiguration:
+  connectionString: {{zookeeperConnectionString}}  # Comma-separated list of ZooKeeper hosts (host:port)
+  connectionBasePath: {{zooKeeperBasePath}}        # Base path in ZooKeeper for storing cluster metadata
+  connectionRetryTimes: 5          # Curator retry count for failed ZooKeeper operations
+  connectionRetrySleepMs: 1_000    # Delay between Curator retries (ms)
+  sessionTimeoutMs: 45_000         # Requested ZooKeeper session timeout and Curator connection timeout (ms)
+grpcConfiguration:
+  shutdownRsTimeoutMs: 600_000    # Total shutdown_rs budget (ms), including retries and core termination
+  masterPort: 9582               # Administrative gRPC port used by the active master
+  masterMonitoringPort: -1       # Monitoring gRPC port; a negative value selects masterPort + 1, not disabled
+  threadPoolSize: 100            # gRPC server executor threads; not a limit on queued or in-flight operations
+  rsReconnectTimeoutMs: 15_000   # TCP connection timeout for master-to-RS gRPC channels (ms)
+  rsResponseTimeoutMs: 600_000   # Response wait budget (ms); progressed operations may wait longer while progress updates arrive
+  rsProgressCalculatorIntervalMs: 10_000 # Expected RS progress interval (ms); match RS masterConfiguration.progressCalculatorIntervalMs
+dataConfiguration:
+  operationsMonitoringEnabled: true      # If true, logs active gRPC request count and in-flight request IDs every second
+  replicationFactor: 3                   # Total replicas per region; must match RS and core replication factors
+  regionsRecoveryInitialCheckDelayMs: 10_000  # Delay before the first RS recovery check after startup (ms)
+  regionsRecoveryCheckDelayMs: 5_000          # Delay after each completed RS recovery check (ms)
+  regionsRecoveryTimeoutMs: 15_000            # Wait time after RS loss before recovery starts; gives RS a chance to rejoin
+  regionsRecoveryTableThreadsCount: 100       # Maximum tables recovered in parallel; values above 1000 are clamped to 1000
+  regionsRecoveryOperationsStoppageTableThreadsCount: 10  # Tables processed in parallel for stopping region operations on RS
+  regionsRecoveryOperationsStoppageRSThreadsCount: 128    # RSs contacted in parallel per table to stop region operations
+  regionsAutoSplitEnabled: true               # Enable automatic region splitting based on replica size and available disk space
+  regionsAutoSplitInitialCheckDelayMs: 30_000   # Delay before first auto-split check after startup (ms)
+  regionsAutoSplitCheckDelayMs: 60_000          # Delay after an auto-split iteration and its selected split tasks finish (ms)
+  regionsAutoSplitTriggerMb: 50                 # Leader-replica size threshold for auto-split (MiB; 1 MiB = 1048576 bytes)
+  regionsAutoSplitReservedMb: 1                 # Free space to preserve on each disk when planning auto-splits (MiB)
+  regionsAutoSplitBatchMarginPercent: 5         # Also split regions with less than this % remaining to the threshold in the same table; 0 disables batching below the threshold
+  regionsAutoSplitTableThreadsCount: 256        # Maximum tables selected per auto-split iteration and processed in parallel
+  regionsRebalanceAnalyticsOnly: false   # If true, rebalance runs only analytics without moving regions
+  regionsAutoRebalanceEnabled: false     # Enable automatic region rebalancing across servers
+  regionsAutoRebalanceInitialCheckDelayMs: 120_000  # Delay before first auto-rebalance check after startup (ms)
+  regionsAutoRebalanceCheckDelayMs: 360_000         # Delay after each completed auto-rebalance iteration (ms)
+  rebalanceTableThreadsCount: 256   # Max parallel threads for table rebalancing operations
+  createTableRetryDelayMs: 5_000    # Delay before retrying table creation after failure (ms)
+  enableTableRetryDelayMs: 5_000    # Delay before retrying table enable operation after failure (ms)
+  disableTableRetryDelayMs: 5_000   # Delay before retrying table disable operation after failure (ms)
+  dropTableRetryDelayMs: 7_000      # Delay before retrying table drop operation after failure (ms)
+  moveRegionRetryDelayMs: 7_000     # Delay before retrying region move operation after failure (ms)
+  recoverTableRetryDelayMs: 7_000   # Delay before retrying table recovery operation after failure (ms)
+  splitTableRetryDelayMs: 7_000     # Delay before retrying table split operation after failure (ms)
+  lockWaitingTimeoutMs: 900_000     # Max time to wait for acquiring a table lock before timing out (ms)
+  lockMonitoringEnabled: true       # Enable periodic monitoring of lock status in logs
+  lockMonitoringDelayMs: 15_000     # Interval between lock monitoring logs (ms)
+clientConfiguration:  # Client settings; comments name the corresponding client properties
+  masterConnectionTimeoutMs: 30          # atalanta.master.connection.timeout.ms
+  masterDisconnectionTimeoutMs: 10_000   # atalanta.master.disconnection.timeout.ms
+  createNamespaceTimeoutMs: 10_000       # atalanta.create.namespace.timeout.ms
+  createTableTimeoutMs: 10_000           # atalanta.create.table.timeout.ms
+  disableTableTimeoutMs: 10_000          # atalanta.disable.table.timeout.ms
+  dropTableTimeoutMs: 10_000             # atalanta.drop.table.timeout.ms

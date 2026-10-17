@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>ATALANTA Web UI</title>
+
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/${bootstrap.version}/css/bootstrap.min.css}"/>
+    <style>
+        .bg-info {
+            background-color: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+
+    </style>
+    <link rel="stylesheet" th:href="@{/webjars/datatables/${datatables.version}/css/dataTables.bootstrap.min.css}">
+    <style>
+        #tDataTable .storage-option {
+            width: 1%;
+            white-space: nowrap;
+            text-align: right;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+    </style>
+    <script th:src="@{/webjars/jquery/${jquery.version}/jquery.min.js}"></script>
+    <script th:src="@{/webjars/datatables/${datatables.version}/js/dataTables.min.js}"></script>
+    <script type="text/javascript">
+    $(document).ready( function () {
+        $('#tDataTable').DataTable({
+            autoWidth: false,
+            pageLength: 100,
+            lengthMenu: [
+                [10, 25, 50, 100, 1000, -1],
+                [10, 25, 50, 100, 1000, 'All']
+            ] });
+    } );
+
+    </script>
+</head>
+<body>
+
+<div th:replace="fragments/nav :: nav"></div>
+
+<div class="jumbotron">
+
+    <div th:if="${zkConnectionStatus}" class="card pb-3">
+        <div class="card-header">
+            <h2 class="mb-3">Namespace: <span class="badge bg-info" th:text="${ns}"/></h2>
+            <h5>
+                Regions: <span class="badge bg-info"
+                               th:text="${atalantaTableModel.rsCount} + ' (' + ${atalantaTableModel.replica1Count} + ',' + ${atalantaTableModel.replica2Count} + ')'"/>
+                Disk: <span class="badge bg-info"
+                            th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(atalantaTableModel.regionMetrics.getSize())}"/>
+                Rows: <span class="badge bg-info" th:text="${atalantaTableModel.getRowCount()}"/>
+                Memory: <span class="badge bg-info"
+                              th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(atalantaTableModel.regionMetrics.getMemUsageBytes())}"/>
+                Get: <span class="badge bg-info" th:text="${atalantaTableModel.regionMetrics.getCountGet()}"/>
+                Put: <span class="badge bg-info" th:text="${atalantaTableModel.regionMetrics.getCountPut()}"/>
+                Delete: <span class="badge bg-info" th:text="${atalantaTableModel.regionMetrics.getCountDel()}"/>
+            </h5>
+        </div>
+        <div class="card-body">
+            <!--<form th:action="@{/createTable}" method="post" class="mb-4">
+                <div class="form-group">
+                    <input type="hidden" name="ns" th:value="${ns}">
+                    <div class="row gx-2">
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">Create Table</button>
+                        </div>
+                        <div class="col-auto">
+                            <input type="number" class="form-control" id="regionCount" name="regionCount"
+                                   th:field="*{atalantaTableModel.regionCount}" min="1" value="1" required>
+                            <small class="form-text text-muted">Regions</small>
+                        </div>
+                        <div class="col">
+                            <input type="text" class="form-control" id="name" name="name" th:field="*{atalantaTableModel.name}" required>
+                            <small class="form-text text-muted">Table Name</small>
+                        </div>
+                    </div>
+                </div>
+            </form>-->
+            <table class="table table-striped table-hover" id="tDataTable">
+                <thead>
+                <tr>
+                    <th scope="col">Table name</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Rows</th>
+                    <th scope="col">Regions</th>
+                    <th scope="col">Disk usage (all replicas)</th>
+                    <th scope="col">Mem usage</th>
+                    <th scope="col">Get</th>
+                    <th scope="col">Put</th>
+                    <th scope="col">Del</th>
+                    <th scope="col" class="storage-option">Compress</th>
+                    <th scope="col" class="storage-option">Dict</th>
+                </tr>
+                </thead>
+                <tr th:each="t: ${tables}">
+                    <td><h5><a th:href="'/tables?ns=' + ${t.ns} + '&table=' + ${t.name}"
+                               th:text="${t.ns} + ':' + ${t.name}"></a></h5></td>
+                    <td><h5 th:text="${t.status}"/></td>
+                    <td><h5 th:text="${t.regionMetrics.keys}"/></td>
+                    <td><h5 th:text="${t.rsCount} + '(' + ${t.replica1Count} + ',' + ${t.replica2Count} + ')'"/></td>
+                    <td>
+                        <h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(t.regionMetrics.getSize())}"/>
+                    </td>
+                    <td>
+                        <h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(t.regionMetrics.getMemUsageBytes())}"/>
+                    </td>
+                    <td><h5 th:text="${t.regionMetrics.getCountGet()}"/></td>
+                    <td><h5 th:text="${t.regionMetrics.getCountPut()}"/></td>
+                    <td><h5 th:text="${t.regionMetrics.getCountDel()}"/></td>
+                    <td class="storage-option"><h5 th:text="${t.compress != null ? t.compress : '-'}"/></td>
+                    <td class="storage-option"><h5 th:text="${t.dict != null ? t.dict : '-'}"/></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div th:unless="${zkConnectionStatus}" class="alert alert-danger pb-3" role="alert">
+        <h3 th:text="'Can`t connect to Zookeeper: ' + ${zkConnectionString}"/>
+    </div>
+</div>
+
+<script th:src="@{/webjars/jquery/3.0.0/jquery.min.js}"></script>
+<script th:src="@{/webjars/popper.js/1.12.9-1/umd/popper.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/4.0.0-2/js/bootstrap.min.js}"></script>
+
+</body>
+</html>

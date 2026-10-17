@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.light.atalanta</groupId>
+    <artifactId>atalanta</artifactId>
+    <version>0.09.09-ce</version>
+  </parent>
+  <artifactId>atalanta-usage-example</artifactId>
+  <name>AtalantaDB Usage Example</name>
+  <dependencies>
+    <dependency>
+      <groupId>com.light.atalanta</groupId>
+      <artifactId>atalanta-client</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <resources>
+      <resource>
+        <directory>${edition.resources.dir}</directory>
+        <excludes>
+          <exclude>run-usage-example.sh</exclude>
+        </excludes>
+      </resource>
+    </resources>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.5.4</version>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <configuration>
+          <finalName>${project.artifactId}</finalName>
+          <archive>
+            <manifest>
+              <mainClass>com.light.atalanta.tool.AtalantaDataTool</mainClass>
+            </manifest>
+          </archive>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <appendAssemblyId>false</appendAssemblyId>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-executable-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-usage-example-to-distribution</id>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target name="copy_usage_example">
+                <mkdir dir="../${app.distro.root.dir}/atalanta-usage-example/config" />
+                <copy file="${project.build.directory}/${project.artifactId}.jar" todir="../${app.distro.root.dir}/atalanta-usage-example" />
+                <copy file="${project.basedir}/src/main/resources/run-usage-example.sh" todir="../${app.distro.root.dir}/atalanta-usage-example" />
+                <copy file="${usage.example.config}" tofile="../${app.distro.root.dir}/atalanta-usage-example/config/atalanta-site.xml" />
+                <chmod file="../${app.distro.root.dir}/atalanta-usage-example/run-usage-example.sh" perm="+x" />
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

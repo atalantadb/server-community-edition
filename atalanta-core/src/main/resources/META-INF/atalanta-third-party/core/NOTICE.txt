@@ -1,0 +1,17 @@
+Apache HBase
+Copyright 2007-2017 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+--
+This product incorporates portions of the 'Hadoop' project
+
+Copyright 2007-2009 The Apache Software Foundation
+
+Licensed under the Apache License v2.0
+
+AtalantaDB includes adapted HBase byte-array utilities, split algorithms and
+CopyOnWriteArrayMap with its extracted helper classes. Local modifications
+include package relocation, class extraction and implementation changes.
+The accompanying license is APACHE-2.0.txt in this resource directory.

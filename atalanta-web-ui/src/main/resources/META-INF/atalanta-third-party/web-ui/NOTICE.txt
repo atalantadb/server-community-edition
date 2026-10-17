@@ -1,0 +1,9 @@
+Prometheus Scraper (jmazzitelli/prometheus-scraper)
+Copyright (c) 2022 John Mazzitelli
+
+Licensed under the MIT License.
+
+AtalantaDB includes an adapted jmazzitelli/prometheus-scraper in its prometheus
+package. Local modifications include SLF4J logging, metric parsing and
+processing changes, and application integration.
+The accompanying license is MIT.txt in this resource directory.

@@ -1,0 +1,40 @@
+zooKeeperConfiguration:
+  connectionString: localhost:2181
+  connectionBasePath: /atalanta
+  connectionRetryTimes: 5
+  connectionRetrySleepMs: 1000
+  sessionTimeoutMs: 45_000
+rsDirs:
+  - ../../data/rs4
+grpcConfiguration:
+  regionServerPort: 8588
+  threadPoolSize: 512
+  activeProcessingRequests: 10_000
+  grpcRequestsMonitoringEnabled: true
+  receiveRegionTimeoutMs: 600_000
+  regionServerConnectTimeoutMs: 15000
+  regionServerDisconnectTimeoutMs: 5000
+masterConfiguration:
+  connectionRetryLimit: 15
+  connectionRequestTimeoutMs: 10000
+  progressCalculatorIntervalMs: 10000
+  progressCalculatorAbortTimeoutMs: 300000
+  replicationFactor: 3
+coreConfiguration:
+  connectionRetryTimes: 15
+  connectionRetrySleepMs: 5000
+  host: localhost
+  rsPort: 20004
+  clientPort: 10044
+  socketTimeoutMs: 999999999
+healthCheckerConfiguration:
+  initialDelaySecs: 10
+  delaySecs: 1
+  coreName: atalanta_r4
+  coreCheckIntervalMs: 60000
+  coreTimeoutMs: 180000
+dataConfiguration:
+  splitSourceBackupEnabled: false
+  splitSourceBackupDir: ../../data/bkp
+  simpleRegionDistributionThresholdPercent: 10
+  keepOrphanHours: 1

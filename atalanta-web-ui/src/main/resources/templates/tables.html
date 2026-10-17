@@ -1,0 +1,147 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>ATALANTA Web UI</title>
+
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/${bootstrap.version}/css/bootstrap.min.css} "/>
+    <link rel="stylesheet" th:href="@{/webjars/datatables/${datatables.version}/css/dataTables.bootstrap.min.css}">
+    <style>
+        #tablDataTable .storage-option {
+            width: 1%;
+            white-space: nowrap;
+            text-align: right;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+    </style>
+    <script th:src="@{/webjars/jquery/${jquery.version}/jquery.min.js}"></script>
+    <script th:src="@{/webjars/datatables/${datatables.version}/js/dataTables.min.js}"></script>
+    <script type="text/javascript">
+    $(document).ready( function () {
+        $('#tablDataTable').DataTable({
+            autoWidth: false,
+            paging: false,
+            lengthChange: false,
+            info: false });
+    } );
+    </script>
+</head>
+<body>
+
+<div th:replace="fragments/nav :: nav"></div>
+
+<div class="jumbotron">
+
+
+    <div th:if="${zkConnectionStatus}" class="card pb-3">
+        <div class="card-header">
+            <h3>Tables</h3>
+        </div>
+        <div class="card-body">
+            <!--<form th:action="@{/createTable}" method="post" class="mb-4">
+                <div class="form-group">
+                    <div class="row gx-2">
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">Create Table</button>
+                        </div>
+                        <div class="col-auto">
+                            <select class="form-control" name="ns" required>
+                                <option value="">Select Namespace</option>
+                                <option th:each="ns : ${nsList}" th:value="${ns.name}" th:text="${ns.name}"></option>
+                            </select>
+                            <small class="form-text text-muted">Namespace</small>
+                        </div>
+                        <div class="col-auto">
+                            <input type="number" class="form-control" id="regionCount" name="regionCount" min="1" value="1" required>
+                            <small class="form-text text-muted">Regions</small>
+                        </div>
+                        <div class="col">
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            <small class="form-text text-muted">Table Name</small>
+                        </div>
+                    </div>
+                </div>
+            </form>-->
+            <div class="row">
+                <div class="col-sm-12 col-md-5">
+                    <form th:action="@{/tables}" method="get" class="mb-2">
+                        <input type="hidden" name="pg" value="0">
+                        <label for="tablePageSize">
+                            <select id="tablePageSize" name="pageSize"
+                                    class="custom-select custom-select-sm w-auto"
+                                    onchange="this.form.submit()">
+                                <option th:each="size : ${pageSizes}" th:value="${size}"
+                                        th:selected="${size == pageSize}"
+                                        th:text="${size == -1 ? 'All' : size}"></option>
+                            </select>
+                            entries per page
+                        </label>
+                    </form>
+                    <div class="dataTables_info"
+                         th:text="'Showing ' + ${tableBegIndex} + ' to ' + ${tableEndIndex} + ' of ' + ${totalTables} + ' entries'"></div>
+                </div>
+                <div class="col-sm-12 col-md-7">
+                    <nav th:if="${pageSize != -1 && totalTables > 0}" aria-label="Table pages">
+                        <ul class="pagination justify-content-end">
+                            <li class="page-item" th:classappend="${!hasPreviousPage} ? 'disabled'">
+                                <a th:if="${hasPreviousPage}" class="page-link"
+                                   th:href="@{/tables(pageSize=${pageSize},pg=${pgPrev})}">Previous</a>
+                                <span th:unless="${hasPreviousPage}" class="page-link" aria-disabled="true">Previous</span>
+                            </li>
+                            <li class="page-item" th:classappend="${!hasNextPage} ? 'disabled'">
+                                <a th:if="${hasNextPage}" class="page-link"
+                                   th:href="@{/tables(pageSize=${pageSize},pg=${pgNext})}">Next</a>
+                                <span th:unless="${hasNextPage}" class="page-link" aria-disabled="true">Next</span>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
+
+            <table class="table table-striped table-hover" id="tablDataTable">
+                <thead>
+                <tr>
+                    <th scope="col">Table name</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Rows</th>
+                    <th scope="col">Replicas</th>
+                    <th scope="col">Disk usage (all replicas)</th>
+                    <th scope="col">Mem usage</th>
+                    <th scope="col">Get</th>
+                    <th scope="col">Put</th>
+                    <th scope="col">Del</th>
+                    <th scope="col" class="storage-option">Compress</th>
+                    <th scope="col" class="storage-option">Dict</th>
+                </tr>
+                </thead>
+                <tr th:each="t: ${tables}">
+                    <td><h5><a th:href="'/tables?ns=' + ${t.ns} + '&table=' + ${t.name}"
+                               th:text="${t.ns} + ':' + ${t.name}"></a></h5></td>
+                    <td><h5 th:text="${t.status}"/></td>
+                    <td><h5 th:text="${t.regionMetrics.keys}"/></td>
+                    <td><h5 th:text="${t.rsCount} + '(' + ${t.replica1Count} + ',' + ${t.replica2Count} + ')'"/></td>
+                    <td><h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(t.regionMetrics.getSize())}"/></td>
+                    <td><h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(t.regionMetrics.getMemUsageBytes())}"/></td>
+                    <td><h5 th:text="${t.regionMetrics.getCountGet()}"/></td>
+                    <td><h5 th:text="${t.regionMetrics.getCountPut()}"/></td>
+                    <td><h5 th:text="${t.regionMetrics.getCountDel()}"/></td>
+                    <td class="storage-option"><h5 th:text="${t.compress != null ? t.compress : '-'}"/></td>
+                    <td class="storage-option"><h5 th:text="${t.dict != null ? t.dict : '-'}"/></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div th:unless="${zkConnectionStatus}" class="alert alert-danger pb-3" role="alert">
+        <h3 th:text="'Can't connect to Zookeeper: + ${zkConnectionString}"/>
+    </div>
+
+</div>
+
+<script th:src="@{/webjars/jquery/3.0.0/jquery.min.js}"></script>
+<script th:src="@{/webjars/popper.js/1.12.9-1/umd/popper.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/4.0.0-2/js/bootstrap.min.js}"></script>
+
+</body>
+</html>

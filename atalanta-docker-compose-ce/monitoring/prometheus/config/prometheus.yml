@@ -1,0 +1,34 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          app: prometheus
+
+  - job_name: atalanta-master
+    scheme: http
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["master-a:8300", "master-b:8300"]
+        labels:
+          app: atalanta-master
+
+  - job_name: atalanta-rs
+    scheme: http
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["atalanta-rs-host0:8300", "atalanta-rs-host1:8300", "atalanta-rs-host2:8300"]
+        labels:
+          app: atalanta-rs
+
+  - job_name: atalanta-web-ui
+    scheme: http
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["web-ui:8333"]
+        labels:
+          app: atalanta-web-ui

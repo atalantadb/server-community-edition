@@ -1,0 +1,13 @@
+server.port: 1111
+# Web UI metrics responses: maximum size in bytes and RPC deadline in milliseconds.
+metrics.grpc.max-inbound-message-size: 33554432
+metrics.grpc.request-timeout-ms: 10000
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
