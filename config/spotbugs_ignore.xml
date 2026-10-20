@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <Match>
+        <Package name="com.light.atalanta.util"/>
+    </Match>
+    <Match>
+        <Package name="com.light.atalanta.grpc"/>
+    </Match>
+    <Match>
+        <Bug pattern="DMI_RANDOM_USED_ONLY_ONCE"/>
+    </Match>
+</FindBugsFilter>

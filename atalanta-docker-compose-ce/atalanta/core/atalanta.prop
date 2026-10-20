@@ -1,0 +1,7 @@
+client_port=14444                       // must be equal rs/region-server-configuration.yml - clientPort
+replication_port=14445                  // must be client_port + 1, port for data replication between DB instances
+rs_port=20001                           // must be equal rs/region-server-configuration.yml - rsPort
+rf=2                                    // replication factor: must be equal */*.yml - replicationFactor
+log_level=1                             // range 0 - 7 (be careful to increase)
+exit_file_name=EXIT.cmd                 // must by unique in this directory
+health_file_name=atalanta_health.chk    // must by unique in this directory

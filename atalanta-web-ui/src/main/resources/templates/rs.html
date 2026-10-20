@@ -1,0 +1,84 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>ATALANTA Web UI</title>
+
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/${bootstrap.version}/css/bootstrap.min.css}"/>
+    <link th:rel="stylesheet" th:href="@{/webjars/datatables/${datatables.version}/css/dataTables.bootstrap.min.css}"/>
+
+</head>
+<body>
+
+<div th:replace="fragments/nav :: nav"></div>
+
+<div class="jumbotron">
+    <div class="card">
+        <div class="card-header">
+            <h3 th:text="'Region server ' + ${rs.name}"/>
+        </div>
+        <div class="card-body">
+            <h5>
+                <span>host: </span><span class="badge bg-primary" th:text="${rs.host} + ':' + ${rs.javaPort}"/>
+                <span>status: </span><span class="badge bg-primary" th:text="${rs.rsStatus}"/>
+                <span>core port: </span><span class="badge bg-primary" th:text="${rs.coreClientPort}"/>
+                <span>jmx port: </span><span class="badge bg-primary" th:text="${rs.jmxPort}"/>
+                <span>replicas: </span><span class="badge bg-primary" th:text="${rs.regionServerMetrics.regionCount} + '(' + ${rs.regionServerMetrics.regionCountFollower1} + ',' + ${rs.regionServerMetrics.regionCountFollower2} + ')'"/></span>
+                <span>size: </span><span class="badge bg-primary" th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(rs.regionServerMetrics.sizeTotal)}"/></span>
+                <span>rows: </span><span class="badge bg-primary" th:text="${rs.regionServerMetrics.keysTotal}"/>
+                <span>mem usage: </span><span class="badge bg-primary" th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(rs.regionServerMetrics.memUsageBytesTotal)}"/></span>
+                <span>get: </span><span class="badge bg-primary" th:text="${rs.regionServerMetrics.countGetTotal}"/>
+                <span>put: </span><span class="badge bg-primary" th:text="${rs.regionServerMetrics.countPutTotal}"/>
+                <span>del: </span><span class="badge bg-primary" th:text="${rs.regionServerMetrics.countDelTotal}"/>
+                <span>ver: </span><span class="badge bg-primary" th:text="${rs.regionServerMetrics.versionInfo.build}"/>
+                <span>build date: </span><span class="badge bg-primary" th:text="${rs.regionServerMetrics.versionInfo.date}"/>
+                <span>commit: </span><span class="badge bg-primary" th:text="${rs.regionServerMetrics.versionInfo.commit}"/>
+            </h5>
+        </div>
+    </div>
+    <div class="card pb-3">
+        <div class="card-header">
+            <h3>Disks</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped" id="rDataTable">
+                <thead>
+                <tr>
+                    <th scope="col">name</th>
+                    <th scope="col">total</th>
+                    <th scope="col">free</th>
+                    <th scope="col">%</th>
+                    <th scope="col">Replicas</th>
+                    <th scope="col">Replicas size</th>
+                </tr>
+                </thead>
+                <tr th:each="diskInfo: ${rs.regionServerMetrics.rsDisks}">
+                    <td><h5 th:text="${diskInfo.key}"/></td>
+                    <td><h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize3(diskInfo.value.totalSize)}"/></td>
+                    <td><h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize3(diskInfo.value.usable)}"/></td>
+                    <td><h5 th:text="${#numbers.formatDecimal( (diskInfo.value.totalSize > 0 ? diskInfo.value.usable * 100 / diskInfo.value.totalSize : 0.0), 0, 1)}"/></td>
+                    <td><h5 th:text="${rs.diskInfoExt.get(diskInfo.key).regionCount}"/></td>
+                    <td><h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize3(rs.diskInfoExt.get(diskInfo.key).sizeRegionTotal)}"/></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" th:src="@{/webjars/jquery/${jquery.version}/jquery.min.js}"></script>
+<script type="text/javascript" th:src="@{/webjars/datatables/${datatables.version}/js/dataTables.min.js}"></script>
+<script type="text/javascript" th:src="@{/webjars/popper.js/1.12.9-1/umd/popper.min.js}"></script>
+<script type="text/javascript" th:src="@{/webjars/bootstrap/${bootstrap.version}/js/bootstrap.min.js}"></script>
+
+<script  th:inline="javascript">
+    $(document).ready( function () {
+        $('#rsDataTable').DataTable({
+            pageLength: 100,
+            lengthMenu: [
+                [10, 25, 50, 100, 1000, -1],
+                [10, 25, 50, 100, 1000, 'All']
+            ] });
+    } );
+</script>
+</body>
+</html>

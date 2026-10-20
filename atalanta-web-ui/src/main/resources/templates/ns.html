@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>ATALANTA Web UI</title>
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/${bootstrap.version}/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/webjars/datatables/${datatables.version}/css/dataTables.bootstrap.min.css}">
+    <script th:src="@{/webjars/jquery/${jquery.version}/jquery.min.js}"></script>
+    <script th:src="@{/webjars/datatables/${datatables.version}/js/dataTables.min.js}"></script>
+    <script type="text/javascript">
+    $(document).ready( function () {
+        $('#nsDataTable').DataTable({
+            pageLength: 100,
+            lengthMenu: [
+                [10, 25, 50, 100, 1000, -1],
+                [10, 25, 50, 100, 1000, 'All']
+            ] });
+    } );
+    </script>
+</head>
+<body>
+
+<div th:replace="fragments/nav :: nav"></div>
+
+<div class="jumbotron">
+
+    <div th:if="${zkConnectionStatus}" class="card pb-3">
+        <div class="card-header">
+            <h3>Namespaces</h3>
+        </div>
+        <div class="card-body">
+           <!-- <form th:action="@{/createNs}" method="post" class="mb-4">
+                <div class="form-group">
+                    <div class="row gx-2">
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">Create Namespace</button>
+                        </div>
+                        <div class="col">
+                            <input type="text" class="form-control" id="name" name="name" th:field="*{nsModel.name}" required>
+                            <small class="form-text text-muted">Namespace Name</small>
+                        </div>
+                    </div>
+                </div>
+            </form>-->
+            <table class="table table-striped table-hover" id="nsDataTable">
+                <thead>
+                <tr>
+                    <th scope="col">Namespace name</th>
+                    <th scope="col">Count of tables</th>
+                </tr>
+                </thead>
+                <tr th:each="ns : ${nsList}">
+                    <td><h5><a  th:href="'/ns?ns=' + ${ns.name}" th:text="${ns.name}"></a></h5></td>
+                    <td><h5 th:text="${ns.tableCount}"/></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div th:unless="${zkConnectionStatus}" class="alert alert-danger pb-3" role="alert">
+        <h3 th:text="'Can`t connect to Zookeeper: ' + ${zkConnectionString}"/>
+    </div>
+</div>
+
+<script th:src="@{/webjars/jquery/3.0.0/jquery.min.js}"></script>
+<script th:src="@{/webjars/popper.js/1.12.9-1/umd/popper.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/4.0.0-2/js/bootstrap.min.js}"></script>
+
+</body>
+</html>

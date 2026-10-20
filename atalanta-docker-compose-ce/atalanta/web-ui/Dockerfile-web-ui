@@ -1,0 +1,36 @@
+FROM ubuntu:24.04
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        openjdk-17-jre-headless ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/atalanta/web-ui
+
+# Keep the application license and embedded-source notices in every CE image.
+COPY LICENSE NOTICE THIRD-PARTY-SOURCES.md /opt/atalanta/
+COPY licenses/Apache-2.0.txt \
+     licenses/MIT-prometheus-scraper.txt \
+     licenses/BSD-2-Clause-sslsplit.txt \
+     licenses/BSD-3-Clause-csnappy.txt \
+     licenses/BSD-2-Clause-lz4.txt \
+     licenses/BSD-2-Clause-xxhash.txt \
+     licenses/MIT-libcrc.txt \
+     licenses/ISC-libsodium.txt /opt/atalanta/licenses/
+
+COPY atalanta-web-ui/target/atalanta-web-ui.jar ./
+COPY atalanta-docker-compose-ce/atalanta/web-ui/start-web.sh \
+     atalanta-docker-compose-ce/atalanta/web-ui/application.yml ./
+COPY atalanta-docker-compose-ce/atalanta/web-ui/config/master-configuration.yml \
+     atalanta-docker-compose-ce/atalanta/web-ui/config/atalanta-site.xml \
+     atalanta-docker-compose-ce/atalanta/web-ui/config/log4j.properties ./config/
+COPY atalanta-shell/target/atalanta-shell.jar /opt/atalanta/shell/
+COPY atalanta-docker-compose-ce/atalanta/master/shell/atalanta-shell.sh /opt/atalanta/shell/
+COPY atalanta-docker-compose-ce/atalanta/master/shell/config/atalanta-site.xml /opt/atalanta/shell/config/
+# Use the native distribution's shell logging configuration, not a Docker-specific copy.
+COPY atalanta-distro/src/main/resources/bin/shell/config/log4j.properties /opt/atalanta/shell/config/
+
+RUN chmod +x ./start-web.sh ../shell/atalanta-shell.sh \
+    && mkdir -p ./logs /opt/logs
+
+ENTRYPOINT ["/opt/atalanta/web-ui/start-web.sh"]

@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.light.atalanta</groupId>
+    <artifactId>atalanta</artifactId>
+    <version>0.09.09-ce</version>
+  </parent>
+  <artifactId>atalanta-distro</artifactId>
+  <properties>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-distro</id>
+            <phase>package</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target name="target_copy">
+                <copy toDir="../${app.distro.root.dir}">
+                  <fileset dir="${basedir}/${edition.resources.dir}" />
+                </copy>
+                <copy toDir="../${app.distro.root.dir}">
+                  <fileset dir="${basedir}/..">
+                    <include name="LICENSE" />
+                    <include name="NOTICE" />
+                    <include name="THIRD-PARTY-SOURCES.md" />
+                    <include name="licenses/Apache-2.0.txt" />
+                    <include name="licenses/MIT-prometheus-scraper.txt" />
+                    <include name="licenses/BSD-2-Clause-sslsplit.txt" />
+                    <include name="licenses/BSD-3-Clause-csnappy.txt" />
+                    <include name="licenses/BSD-2-Clause-lz4.txt" />
+                    <include name="licenses/BSD-2-Clause-xxhash.txt" />
+                    <include name="licenses/MIT-libcrc.txt" />
+                    <include name="licenses/ISC-libsodium.txt" />
+                  </fileset>
+                </copy>
+                <chmod dir="../${app.distro.root.dir}" perm="+x" includes="**/*.sh" />
+                <chmod dir="../${app.distro.root.dir}" perm="-x" includes="*.sh" />
+                <chmod dir="../${app.distro.root.dir}" perm="+x" includes="setup-adb.sh" />
+                <chmod dir="../${app.distro.bin.dir}" perm="+x" includes="core/adb" />
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <phase>package</phase>
+            <configuration>
+              <tasks>
+                <replace dir="../${app.distro.bin.dir}">
+                  <include name="**/*.sh" />
+                  <replacefilter token="%env_profile%" value="${instance.profile}" />
+                </replace>
+                <chmod dir="../${app.distro.bin.dir}" perm="+x" includes="**/*.sh" />
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

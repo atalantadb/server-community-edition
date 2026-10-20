@@ -1,0 +1,50 @@
+zooKeeperConfiguration:
+  connectionString: localhost:2181
+  connectionBasePath: /atalanta
+  connectionRetryTimes: 5
+  connectionRetrySleepMs: 1_000
+  sessionTimeoutMs: 45_000
+grpcConfiguration:
+  masterPort: 9582
+  masterMonitoringPort: 9584
+  threadPoolSize: 100
+  rsReconnectTimeoutMs: 15_000
+  rsResponseTimeoutMs: 600_000
+  rsProgressCalculatorIntervalMs: 10_000
+dataConfiguration:
+  operationsMonitoringEnabled: true
+  replicationFactor: 3
+  regionsRecoveryInitialCheckDelayMs: 10_000
+  regionsRecoveryCheckDelayMs: 5_000
+  regionsRecoveryTimeoutMs: 15_000
+  regionsRecoveryTableThreadsCount: 100
+  regionsRecoveryOperationsStoppageTableThreadsCount: 10
+  regionsRecoveryOperationsStoppageRSThreadsCount: 128
+  regionsAutoSplitEnabled: true
+  regionsAutoSplitInitialCheckDelayMs: 30_000
+  regionsAutoSplitCheckDelayMs: 60_000
+  regionsAutoSplitTriggerMb: 30_000
+  regionsAutoSplitBatchMarginPercent: 5
+  regionsAutoSplitTableThreadsCount: 256
+  regionsRebalanceAnalyticsOnly: false
+  regionsAutoRebalanceEnabled: true
+  regionsAutoRebalanceInitialCheckDelayMs: 120_000
+  regionsAutoRebalanceCheckDelayMs: 360_000
+  rebalanceTableThreadsCount: 256
+  createTableRetryDelayMs: 5_000
+  enableTableRetryDelayMs: 5_000
+  disableTableRetryDelayMs: 5_000
+  dropTableRetryDelayMs: 7_000
+  moveRegionRetryDelayMs: 7_000
+  recoverTableRetryDelayMs: 7_000
+  splitTableRetryDelayMs: 7_000
+  lockWaitingTimeoutMs: 900_000
+  lockMonitoringEnabled: true
+  lockMonitoringDelayMs: 15_000
+clientConfiguration:
+  masterConnectionTimeoutMs: 30
+  masterDisconnectionTimeoutMs: 10_000
+  createNamespaceTimeoutMs: 10_000
+  createTableTimeoutMs: 10_000
+  disableTableTimeoutMs: 10_000
+  dropTableTimeoutMs: 10_000

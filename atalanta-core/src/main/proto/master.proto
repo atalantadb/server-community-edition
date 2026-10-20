@@ -1,0 +1,285 @@
+syntax = "proto3";
+package com.light.atalanta.grpc;
+
+import "atalanta.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+option java_outer_classname = "MasterProto";
+
+/* Synchronously shuts down all running region servers, then the master. */
+message ShutdownRsRequest {
+  string token = 1;
+}
+
+message ShutdownRsError {
+  ProtoRegionServer regionServer = 1;
+  string details = 2; // Failure reason, including no response before the overall deadline
+}
+
+message ShutdownRsResponse {
+  bool success = 1; // true only after all RS responded successfully; errors must then be empty
+  repeated ShutdownRsError errors = 2; // One entry per failed RS
+  string details = 3; // Overall failure reason, including an error before the requests were sent
+}
+
+/* Request to create a namespace */
+message CreateNamespaceRequest {
+  string namespace = 1; // Namespace to create
+  string token = 2;
+}
+
+/* Request to create a table */
+message CreateTableRequest {
+  ProtoTableName tableName = 1; // Table to create
+  repeated bytes splitKeys = 2; // Region boundaries (see HBase UniformSplit)
+  string token = 3;
+  int32 dataBlockSize = 4;
+  optional string compressType = 5;
+  optional string recordCompressionType = 6;
+  optional string dictionary = 8;
+  optional string recordTargetCount = 9;
+}
+
+/* Request to disable a table */
+message DisableTableRequest {
+  ProtoTableName tableName = 1; // Table to disable
+  string token = 2;
+}
+
+/* Request to enable a table */
+message EnableTableRequest {
+  ProtoTableName tableName = 1; // Table to enable
+  string token = 2;
+}
+
+/* Request to drop a table */
+message DropTableRequest {
+  ProtoTableName tableName = 1; // Table to drop
+  string token = 2;
+}
+
+/* Request to move regions */
+message BulkMoveRegionRequest {
+  ProtoTableName tableName = 1;               // Table whose regions are moved
+  repeated MoveRegionRequest moveRequest = 2; // Move requests
+  string token = 3;
+}
+
+message MoveRegionRequest {
+  string regionIdentity = 1;    // regionName_replicaNum
+  string regionServerName = 2;  // Target region server
+}
+
+/* Request to split regions */
+message SplitRegionRequest {
+  ProtoTableName tableName = 1;           // Table whose regions are split
+  repeated string regionNamesToSplit = 2; // Names of the regions to split, without replicaNum
+  string token = 3;
+}
+
+/* Request to start asynchronous rebalancing */
+message StartRebalanceRequest {
+  string entity = 1; // Rebalancing scope: database root level, namespace or table
+  string token = 2;
+}
+
+/* Request to stop all rebalancing processes */
+message StopRebalanceRequest {
+  string entity = 1; // Scope to stop rebalancing for: database root level, namespace or table
+  string token = 2;
+}
+
+/* Request to synchronize region replicas */
+message SynchronizeRequest {
+  string entity = 1; // Synchronization scope: database root level, namespace or table
+  string token = 2;
+}
+
+/* Request for the current file list */
+message ActualFilesRequest {
+  repeated string files = 1;
+}
+
+message ActualFilesResponse {
+  repeated string files = 1;
+}
+
+message FMasterInfoMsg {
+  string name = 1;
+  string msg = 2;
+}
+
+
+/* Ping response */
+message PingResponse {
+  string mode = 1; // Current master state (com.light.atalanta.master.enums.LeaderState)
+  int64 createNamespace = 2;
+  int64 createTable = 3;
+  int64 enableTable = 4;
+  int64 disableTable = 5;
+  int64 dropTable = 6;
+  int64 moveRegion = 7;
+  int64 splitRegion = 8;
+  int64 startReplicasRebalanceAsync = 9;
+  int64 syncTableReplicas = 10;
+  int64 stopReplicasRebalance = 11;
+  int64 startRegionsRebalanceAsync = 12;
+  int64 stopRegionsRebalance = 13;
+  int64 createSnapshot = 14;
+  int64 cloneSnapshot = 15;
+  int64 deleteSnapshot = 16;
+  int64 startRegionServer = 17;
+  int64 stopRegionServer = 18;
+}
+
+message InfoResponse {
+  repeated FMasterInfoMsg createNamespaceMsgList = 1;
+  repeated FMasterInfoMsg createTableMsgList = 2;
+  repeated FMasterInfoMsg enableTableMsgList = 3;
+  repeated FMasterInfoMsg disableTableMsgList = 4;
+  repeated FMasterInfoMsg dropTableMsgList = 5;
+  repeated FMasterInfoMsg moveRegionMsgList = 6;
+  repeated FMasterInfoMsg splitRegionMsgList = 7;
+  repeated FMasterInfoMsg startReplicasRebalanceAsyncMsgList = 8;
+  repeated FMasterInfoMsg syncTableReplicasMsgList = 9;
+  repeated FMasterInfoMsg stopReplicasRebalanceMsgList = 10;
+  repeated FMasterInfoMsg startRegionsRebalanceAsyncMsgList = 11;
+  repeated FMasterInfoMsg stopRegionsRebalanceMsgList = 12;
+  repeated FMasterInfoMsg createSnapshotMsgList = 13;
+  repeated FMasterInfoMsg cloneSnapshotMsgList = 14;
+  repeated FMasterInfoMsg deleteSnapshotMsgList = 15;
+  repeated FMasterInfoMsg startRegionServerMsgList = 16;
+  repeated FMasterInfoMsg stopRegionServerMsgList = 17;
+}
+
+/* Login-based authentication */
+message AuthSimple {
+  string login = 1;
+}
+
+/*
+ Access rights, as in
+ https://hbase.apache.org/devapidocs/org/apache/hadoop/hbase/security/access/Permission.Action.html
+ */
+enum PermissionAction {
+  ADMIN = 0;
+  CREATE = 1;
+  EXEC = 2;
+  READ = 3;
+  WRITE = 4;
+}
+
+/* Permission scope */
+enum PermissionScope {
+  GLOBAL = 0;
+  NAMESPACE = 1;
+  TABLE = 2;
+}
+
+/* Request to grant permissions */
+message GrantRequest {
+  string userName = 1; // User login
+  PermissionScope scope = 2; // Permission scope
+  ProtoTableName tableName = 3; // Table and namespace
+  bool mergeExistingPermissions = 4; // Whether to add to or replace the existing permissions
+  repeated PermissionAction action = 5; // Permissions
+  string token = 6;
+}
+
+/* Request to revoke permissions */
+message RevokeRequest {
+  string userName = 1; // User login
+  PermissionScope scope = 2; // Permission scope
+  ProtoTableName tableName = 3; // Table and namespace
+  repeated PermissionAction action = 4; // Permissions
+  string token = 5;
+}
+
+/* User permissions request */
+message UserPermissionsRequest {
+  string userName = 1; // User login
+  PermissionScope scope = 2;
+  ProtoTableName tableName = 3; // Table
+  string token = 4;
+}
+
+/* User permissions */
+message UserPermissions {
+  string userName = 1; // User login
+  PermissionScope scope = 2;
+  ProtoTableName tableName = 3; // Table
+  repeated PermissionAction action = 4; // Permissions
+}
+
+/* Request to create a snapshot */
+message MasterSnapshotRequest {
+  string name = 1; // Snapshot name
+  ProtoTableName tableName = 2; // Table
+  string token = 3;
+}
+
+/* Current state of the recovery process */
+message RecoveryMonitoringInfo {
+  int64 recoveryTableCount = 1;
+  repeated FMasterInfoMsg recoveryInfoMsg = 2;
+}
+
+/* Current state of the leading master startup */
+message MasterStartMonitoringInfo {
+  repeated FMasterInfoMsg masterStartInfoMsg = 1;
+}
+
+
+message OperationNotificationRequest {
+  string userName = 1; // User login
+  ProtoTableName tableName = 2; // Table
+  bool success = 3;
+  string token = 4;
+}
+
+message MasterMetrics {
+  string scrape = 1;
+}
+
+/* Master service */
+service MasterService {
+  rpc shutdownRs(ShutdownRsRequest) returns (ShutdownRsResponse);
+  rpc createNamespace(CreateNamespaceRequest) returns (google.protobuf.Empty);
+  rpc createTable(CreateTableRequest) returns (google.protobuf.Empty);
+  rpc enableTable(EnableTableRequest) returns (google.protobuf.Empty);
+  rpc disableTable(DisableTableRequest) returns (google.protobuf.Empty);
+  rpc dropTable(DropTableRequest) returns (google.protobuf.Empty);
+  rpc moveRegion(BulkMoveRegionRequest) returns (google.protobuf.Empty);
+  rpc splitRegion(SplitRegionRequest) returns (google.protobuf.Empty);
+  rpc startReplicasRebalanceAsync(StartRebalanceRequest) returns (google.protobuf.Empty);
+  rpc stopReplicasRebalance(StopRebalanceRequest) returns (google.protobuf.Empty);
+  rpc startRegionsRebalanceAsync(StartRebalanceRequest) returns (google.protobuf.Empty);
+  rpc stopRegionsRebalance(StopRebalanceRequest) returns (google.protobuf.Empty);
+  rpc syncTableReplicas(SynchronizeRequest) returns (google.protobuf.Empty);
+  rpc authSimple(AuthSimple) returns (google.protobuf.StringValue);
+  rpc auth(google.protobuf.BytesValue) returns (google.protobuf.StringValue);
+  rpc grant(GrantRequest) returns (google.protobuf.Empty);
+  rpc revoke(RevokeRequest) returns (google.protobuf.Empty);
+  rpc getUserPermissions(UserPermissionsRequest) returns (UserPermissions);
+  rpc getRsStartPermission(ProtoRegionServer) returns (google.protobuf.BoolValue);
+  rpc ping(google.protobuf.Empty) returns (PingResponse);
+  rpc info(google.protobuf.Empty) returns (InfoResponse);
+  rpc shutdown(google.protobuf.Empty) returns (PingResponse);
+  rpc createSnapshot(MasterSnapshotRequest) returns (google.protobuf.Empty);
+  rpc cloneSnapshot(MasterSnapshotRequest) returns (google.protobuf.Empty);
+  rpc deleteSnapshot(MasterSnapshotRequest) returns (google.protobuf.Empty);
+  rpc startRegionServer(google.protobuf.StringValue) returns (google.protobuf.BoolValue);
+  rpc stopRegionServer(google.protobuf.StringValue) returns (google.protobuf.BoolValue);
+  rpc readOpNotification(OperationNotificationRequest) returns (google.protobuf.Empty);
+  rpc mutationOpNotification(OperationNotificationRequest) returns (google.protobuf.Empty);
+  rpc modifyTable(CreateTableRequest) returns (google.protobuf.Empty);
+  rpc modificationCompleteNotification(google.protobuf.Empty) returns (google.protobuf.Empty);
+}
+
+/* Recovery monitoring service */
+service MasterMonitoring {
+  rpc recoveryInfo(google.protobuf.Empty) returns (RecoveryMonitoringInfo);
+  rpc masterStartInfo(google.protobuf.Empty) returns (MasterStartMonitoringInfo);
+  rpc getMetrics(google.protobuf.Empty) returns (MasterMetrics);
+}

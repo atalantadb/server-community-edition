@@ -1,0 +1,128 @@
+AtalantaDB Community Edition is distributed under the GNU Affero
+General Public License, version 3 (AGPLv3). See LICENSE for the full text.
+
+Third-party components retain their respective copyright notices
+and license terms. See the notices below, THIRD-PARTY-SOURCES.md,
+and the accompanying license files.
+
+Third-party source components in AtalantaDB
+
+The following notices apply to the embedded source components identified below.
+They do not change the license of AtalantaDB as a whole.
+This is not a complete inventory of runtime dependencies.
+
+Apache HBase
+Copyright 2007-2017 The Apache Software Foundation
+
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
+
+--
+This product incorporates portions of the 'Hadoop' project
+
+Copyright 2007-2009 The Apache Software Foundation
+
+Licensed under the Apache License v2.0
+
+Local components: selected byte-array utilities, split algorithms and
+CopyOnWriteArrayMap, including its extracted helper classes, in atalanta-core.
+
+Prometheus Scraper (jmazzitelli/prometheus-scraper)
+Copyright (c) 2022 John Mazzitelli
+
+Licensed under the MIT License.
+
+Local component: the prometheus package in atalanta-web-ui.
+
+SSLsplit Base64 implementation
+Copyright (c) 2009-2019, Daniel Roethlisberger <daniel@roe.ch>.
+All rights reserved.
+
+Licensed under the BSD 2-Clause License.
+
+Local components: adb-core/crypto/base64.c and adb-core/crypto/base64.h.
+Adapted for AtalantaDB: API compatibility, input validation,
+size checks and initialization/cleanup compatibility functions.
+
+Upstream: https://github.com/droe/sslsplit
+Reference commit: 43c3aaf6b381cf9817aa794f8c2861c421690850
+
+The complete copyright notice, license conditions and disclaimer
+are provided in licenses/BSD-2-Clause-sslsplit.txt.
+
+csnappy (C port of Google Snappy)
+Copyright 2011, Google Inc.
+All rights reserved.
+
+Licensed under the BSD 3-Clause License.
+
+Local components in adb-core/crypto/:
+csnappy.h, csnappy_compat.h, csnappy_compress.c, csnappy_decompress.c,
+csnappy_internal.h and csnappy_internal_userspace.h.
+
+Upstream: https://github.com/zeevt/csnappy
+Reference commit: 6c10c305e8dde193546e6b33cf8a785d5dc123e2
+
+Upstream modification notices credit Zeev Tarantov (Linux Kernel changes)
+and Steffen Mueller and Yves Orton (Sereal changes).
+csnappy_internal_userspace.h also contains code from libexfat/byteorder.h,
+used under the 3-clause BSD license instead of GPL with permission from
+Andrew Nayenko and Albert Lee, as recorded in its source notice.
+
+The complete copyright notice, license conditions and disclaimer
+are provided in licenses/BSD-3-Clause-csnappy.txt.
+
+LZ4
+Copyright (C) 2011-2020, Yann Collet.
+
+Licensed under the BSD 2-Clause License.
+Local components: adb-core/crypto/lz4.c and adb-core/crypto/lz4.h.
+Upstream: https://github.com/lz4/lz4
+The complete upstream notice is provided in licenses/BSD-2-Clause-lz4.txt.
+
+xxHash
+Copyright (C) 2012-2020 Yann Collet
+Copyright (C) 2019-2020 Yann Collet (xxh3.h)
+
+Licensed under the BSD 2-Clause License.
+Local components: adb-core/crypto/xxhash.c, adb-core/crypto/xxhash.h and
+adb-core/crypto/xxh3.h.
+Upstream: https://github.com/Cyan4973/xxHash
+The complete upstream notices are provided in licenses/BSD-2-Clause-xxhash.txt.
+
+libcrc
+Copyright (c) 1999-2016 Lammert Bies
+Copyright (c) 1999-2018 Lammert Bies (checksum.h)
+
+Licensed under the MIT License.
+Local components: adb-core/crypto/crc32.c, adb-core/crypto/crc32.h,
+adb-core/crypto/checksum.h and adb-core/crypto/gentab32.inc.
+Upstream: https://github.com/lammertb/libcrc
+The copyright notices, permission and disclaimer are provided in
+licenses/MIT-libcrc.txt.
+
+libsodium secure memory clearing
+Copyright (c) 2013-2019
+Frank Denis <j at pureftpd dot org>
+
+Licensed under the ISC License.
+Local implementation: adb-core/crypto/memzero.c, adapted from sodium_memzero;
+adb-core/crypto/memzero.h provides its local API declaration.
+Upstream: https://github.com/jedisct1/libsodium
+Reference commit: 1647f0d53ae0e370378a9195477e3df0a792408f
+The complete upstream notice is provided in licenses/ISC-libsodium.txt.
+
+mbed TLS RIPEMD-160 implementation
+Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+
+Licensed under the Apache License, Version 2.0.
+Local components: adb-core/crypto/ripemd160.c and adb-core/crypto/ripemd160.h.
+The implementation has been adapted, including API names and memory clearing.
+Upstream: https://github.com/Mbed-TLS/mbedtls
+The full license is provided in licenses/Apache-2.0.txt.
+Including this hash implementation does not enable TLS functionality.
+
+See THIRD-PARTY-SOURCES.md for file mappings and upstream references.
+The Apache License, Version 2.0 is provided in licenses/Apache-2.0.txt.
+The MIT License and upstream copyright notice for Prometheus Scraper are
+provided in licenses/MIT-prometheus-scraper.txt.
