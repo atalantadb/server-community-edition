@@ -1,11 +1,14 @@
 # AtalantaDB Community Edition
 
+Try AtalantaDB locally with prebuilt Docker images: create a table, write a record,
+and read it back in a few commands. You can try it on Apple Silicon with Docker
+Desktop, too.
+
 ## Quick start with prebuilt Docker images
 
-Requires Docker with Compose V2 2.20.0 or newer and Bash 4 or newer. On macOS,
-install Bash with `brew install bash`. AtalantaDB images are Linux amd64;
-Apple Silicon uses Docker Desktop emulation and has not yet been validated end to end.
-No host JDK, Maven, Python or C compiler is needed for this path.
+You'll need Docker with Compose V2 2.20.0 or newer and Bash 4 or newer. The images
+include the database binaries and runtime dependencies, ready to run. On macOS,
+install Bash with `brew install bash`.
 
 ```bash
 git clone https://github.com/atalantadb/server-community-edition.git
@@ -22,14 +25,12 @@ put 'test', 'r1', 'cf:q', 'hello'
 get 'test', 'r1'
 ```
 
-Open http://localhost:8433/ (no login). The default cluster has one master, one
+Open the Web UI at http://localhost:8433/. The default cluster has one master, one
 RegionServer, the Web UI and three ZooKeeper servers. Use `./1-start.sh --full`
 for two masters, three RegionServers, Prometheus and Grafana. `./0-stop.sh`
 stops either topology without deleting data.
 
-Images are downloaded from GitHub Container Registry. No registry login is
-required. Startup never falls back to a source build if an image cannot be
-downloaded. See
+Public images download automatically from GitHub Container Registry. See
 [Docker instructions](atalanta-docker-compose-ce/README.md) for requirements,
 logs, source builds and publication steps.
 
@@ -63,7 +64,7 @@ RF is the replication factor. For benchmark details, see
 
 ### Runtime
 
-- Start with at least 4 GB RAM for a small demo deployment; larger workloads
+- Start with at least 4 GB RAM for a small demo deployment, larger workloads
   require more memory.
 - Reserve disk space for application files, logs and database data. Required
   capacity depends on the deployment and workload.
@@ -77,7 +78,7 @@ process has its own heap limit.
 Building from source requires additional disk space for Maven dependencies and
 generated artifacts. Docker builds also need space for image layers and build
 cache. See [Docker disk-space guidance](atalanta-docker-compose-ce/README.md#disk-space)
-for the build script's configurable reserves; these are estimates, not measured
+for the build script's configurable reserves, these are estimates, not measured
 minimum requirements.
 
 ## How to use
@@ -95,21 +96,24 @@ and compatible runtime libraries. JDK and Maven are still needed with a prebuilt
 All bundled `adb`/`adb_*` binaries from `adb-core/bin/` are copied without renaming
 to `AtalantaDB/bin/core/`, including after a local core build. Setup checks the
 active core against the host OS (Ubuntu, RHEL 8 or RHEL 9) and asks before replacing
-an incompatible or unidentified binary. Named variants are kept; the previous
+an incompatible or unidentified binary. Named variants are kept the previous
 active binary is backed up as `adb.previous`. Declining the replacement stops setup.
 
-To build Docker images from source (Linux; macOS with Docker Desktop is experimental):
-1. Run `./build-adb-docker-ce.sh`; it builds the images and optionally starts the cluster.
+To build Docker images from source (see the platform notes below for macOS):
+
+1. Run `./build-adb-docker-ce.sh` - it builds the images and optionally starts the cluster.
 2. Open the Web UI at http://localhost:8433/ and see `atalanta-docker-compose-ce/README.md` for the shell, logs and stop commands.
 
-## The Community Edition does not support:
+## Enterprise Edition features
 
-1. Authentication and authorization (ACL and Kerberos/Ranger) features.
-2. Writing records larger than 60,648 bytes.
+AtalantaDB Enterprise Edition extends Community Edition with:
+
+1. Authentication and authorization (ACL and Kerberos/Ranger).
+2. Support for records larger than 60,648 bytes.
 3. Append Update mode, which provides faster data updates.
 4. Read Cache mode, which caches data in the process memory.
 
-These features are available in AtalantaDB Enterprise Edition. For more information, visit [atalantadb.com](https://atalantadb.com).
+Learn more at [atalantadb.com](https://atalantadb.com).
 
 ## Recommendations:
 
@@ -131,6 +135,16 @@ These features are available in AtalantaDB Enterprise Edition. For more informat
 - When updates occur during a scan, the same key may appear more than once, possibly with different values.
 - When a region split occurs during a scan, the same key may appear multiple times.
 - Scan results are not guaranteed to be sorted by key.
+
+## Platform notes
+
+The prebuilt images target Linux amd64. On Apple Silicon, Docker Desktop runs
+them through amd64 emulation. Table creation and data writes have been verified
+in this setup. Failure-recovery and region-move scenarios on Apple Silicon
+still need further validation.
+
+Building Docker images from source on macOS remains experimental. The prebuilt
+images provide the simplest starting point for trying the database there.
 
 Official website:
 https://atalantadb.com/
