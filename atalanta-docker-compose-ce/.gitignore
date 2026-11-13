@@ -1,0 +1,10 @@
+# Generated deployment artifacts are not part of the CE scaffold.
+**/adb
+**/*.jar
+**/*.gch
+**/conf.key
+**/.ce-build-stamp.json
+**/hist
+**/logs/
+**/*.log
+**/target/

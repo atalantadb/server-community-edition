@@ -1,0 +1,153 @@
+syntax = "proto3";
+package com.light.atalanta.grpc;
+
+import "atalanta.proto";
+import "google/protobuf/empty.proto";
+
+option java_outer_classname = "RegionServerProto";
+
+/* The request targets the whole RS and its core, not a single region. */
+message RegionServerShutdownRequest {
+    int64 timeoutMs = 1; // Positive remainder of the master's overall budget, including retries and the core shutdown
+}
+
+message RegionServerShutdownResponse {
+    bool success = 1; // The core acknowledged SHUTDOWN and its process has exited
+    string details = 2; // Failure reason; a negative core reply before retries are exhausted is not final
+}
+
+/* Region operation request */
+message RegionRequest {
+    ProtoTableName tableName = 1;
+    string regionName = 2;
+    int32 replicaNum = 3;
+    int32 statusId = 4;
+    bytes beginKey = 5;
+    bytes endKey = 6;
+    string reservedReplicas = 7;
+    RegionFileRequest regionFileRequest = 8; // Optional; used only to request a part of a region file when moving a region
+    int32 blockSize = 9;                     // Optional
+    string compressType = 10;                // Optional
+    string recordCompressType = 11;
+    bool dictionary = 12;
+    int64 recordTargetCount = 13;
+    string copyFromRs = 14; // Optional
+}
+
+/* Request to send a region file */
+message RegionFileRequest {
+    RegionFile regionFile = 1;
+    string receiver_ip = 2;
+    int32 tcp_port = 3;
+}
+
+/* Region file description */
+message RegionFile {
+    string fileName = 1;
+    int64 fileSize = 2;
+}
+
+/* Files in the region data directory */
+message RegionDirectoryStructure {
+    repeated RegionFile files = 2; // Region file
+}
+
+/* Region operation progress */
+message RegionOperationProgress {
+    string details = 1;  // Current operation status (progress)
+    bool done = 2;       // Whether this progress message is the final one
+    bytes data = 3;      // Region data
+}
+
+/* Snapshot operation request */
+message SnapshotRequest {
+    ProtoTableName tableName = 1;
+    string name = 2;
+}
+
+message CloneSnapshotRequest {
+    ProtoTableName tableName = 1;
+    string name = 2;
+    map<string, string> newRegionMap = 3;
+}
+
+message CopySnapshotRegionRequest {
+    ProtoTableName tableName = 1;
+    string name = 2;
+    string region = 3;
+    int32 targetReplicaNum = 4;
+    string targetRegionServer =5;
+}
+
+message TransferSnapshotRegionRequest {
+    ProtoTableName tableName = 1;
+    string name = 2;
+    string region = 3;
+    int32 targetReplicaNum = 4;
+    string fileName = 5;
+    bytes data = 6;
+}
+
+message RegionSnapshotOperationProgress {
+    string status = 1;
+    string regionName = 2;
+}
+
+message CopyRegionSnapshotOperationProgress {
+    string status = 1;
+    string fileName = 2;
+}
+
+message RegionDataRequest {
+    ProtoTableName tableName = 1;
+    string regionName = 2;
+    int32 replicaNum = 3;
+    string filename = 4;
+    int64 offset = 5;
+}
+
+message RegionDataResponse {
+    bytes data = 1;
+}
+
+message FileInfo {
+    string fileName = 1;
+    int64 size = 2;
+}
+
+message FileList {
+    repeated FileInfo files = 1;
+}
+
+message RsMetrics {
+    string scrape = 1;
+}
+
+/* RegionServer service. The methods are described in RegionTaskType.java */
+service RegionServerService {
+    // The RS sends the final response before it shuts down.
+    rpc shutdown(RegionServerShutdownRequest) returns (RegionServerShutdownResponse);
+    rpc distributeRegion(RegionRequest) returns (stream RegionOperationProgress);
+    rpc disableRegion(RegionRequest) returns (stream RegionOperationProgress);
+    rpc dropRegion(RegionRequest) returns (stream RegionOperationProgress);
+    rpc startRegion(RegionRequest) returns (stream RegionOperationProgress);
+    rpc stopRegion(RegionRequest) returns (stream RegionOperationProgress);
+    rpc moveRegion(RegionRequest) returns (stream RegionOperationProgress);
+    rpc splitRegion1(RegionRequest) returns (stream RegionOperationProgress);
+    rpc splitRegion2(RegionRequest) returns (stream RegionOperationProgress);
+    rpc recoverRegion(RegionRequest) returns (stream RegionOperationProgress);
+    rpc sendRegionFile(RegionRequest) returns (RegionDirectoryStructure);
+    rpc listRegionFiles(RegionRequest) returns (RegionDirectoryStructure);
+    rpc stopTableRegionTasks(RegionRequest) returns (google.protobuf.Empty);
+    rpc ping(google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc createSnapshot(SnapshotRequest) returns (stream RegionSnapshotOperationProgress);
+    rpc cloneSnapshot(CloneSnapshotRequest) returns (stream RegionSnapshotOperationProgress);
+    rpc deleteSnapshot(SnapshotRequest) returns (stream RegionSnapshotOperationProgress);
+    rpc copySnapshotRegion(CopySnapshotRegionRequest) returns (stream CopyRegionSnapshotOperationProgress);
+    rpc createSnapshotRegion(TransferSnapshotRegionRequest) returns (google.protobuf.Empty);
+    rpc copyDataToTargetSnapshotRegion(TransferSnapshotRegionRequest) returns (google.protobuf.Empty);
+    rpc newModifyNotification(google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc getRegionFileList(RegionRequest) returns (FileList);
+    rpc getRegionData(RegionDataRequest) returns (stream RegionDataResponse);
+    rpc getMetrics(google.protobuf.Empty) returns (RsMetrics);
+}

@@ -1,0 +1,244 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>ATALANTA Web UI</title>
+
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/${bootstrap.version}/css/bootstrap.min.css} "/>
+    <style>
+        .bg-info {
+            background-color: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+
+    </style>
+    <link rel="stylesheet" th:href="@{/webjars/datatables/${datatables.version}/css/dataTables.bootstrap.min.css}">
+    <script th:src="@{/webjars/jquery/${jquery.version}/jquery.min.js}"></script>
+    <script th:src="@{/webjars/datatables/${datatables.version}/js/dataTables.min.js}"></script>
+    <script type="text/javascript">
+    $(document).ready( function () {
+        $('#rDataTable').DataTable({
+            pageLength: 100,
+            lengthMenu: [
+                [10, 25, 50, 100, 1000, -1],
+                [10, 25, 50, 100, 1000, 'All']
+            ] });
+        $('#regionsDataTable').DataTable({
+            pageLength: 100,
+            lengthMenu: [
+                [10, 25, 50, 100, 1000, -1],
+                [10, 25, 50, 100, 1000, 'All']
+            ] });
+    } );
+
+    </script>
+</head>
+<body>
+
+<div th:replace="fragments/nav :: nav"></div>
+
+<div class="jumbotron">
+
+    <div th:if="${zkConnectionStatus}" class="card pb-3">
+        <div class="card-header">
+            <h2 class="mb-3">Table: <span class="badge bg-info" th:text="${table.ns} + ':' + ${table.name}"/></h2>
+            <h5>Status: <span class="badge bg-info" th:text="${table.status}"/>
+                Rows: <span class="badge bg-info" th:text="${table.rowCount}"/>
+                Regions: <span class="badge bg-info" th:text="${table.rsCount}"/>
+                Disk: <span class="badge bg-info" th:text="${table.size}"/>
+            </h5>
+            <!--            <div class="row">
+                            <div class="col">
+                                <div class="btn-group" role="group">
+                                    <form th:if="${table.status == 'disabled'}" th:action="@{/enableTable}" method="post" style="display: inline; margin-right: 5px;">
+                                        <input type="hidden" name="ns" th:value="${table.ns}">
+                                        <input type="hidden" name="name" th:value="${table.name}">
+                                        <input type="hidden" name="returnUrl" th:value="${servletPath} + '?' + ${queryString}">
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            Enable
+                                        </button>
+                                    </form>
+                                    <form th:if="${table.status == 'disabled'}" th:action="@{/dropTable}" method="post" style="display: inline; margin-right: 5px;">
+                                        <input type="hidden" name="ns" th:value="${table.ns}">
+                                        <input type="hidden" name="name" th:value="${table.name}">
+                                        <input type="hidden" name="returnUrl" th:value="${servletPath} + '?' + ${queryString}">
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to drop this table?')">
+                                            Drop
+                                        </button>
+                                    </form>
+                                    <form th:if="${table.status == 'assigned' || table.status == 'created' || table.status == 'enabled'}" th:action="@{/disableTable}" method="post" style="display: inline;">
+                                        <input type="hidden" name="ns" th:value="${table.ns}">
+                                        <input type="hidden" name="name" th:value="${table.name}">
+                                        <input type="hidden" name="returnUrl" th:value="${servletPath} + '?' + ${queryString}">
+                                        <button type="submit" class="btn btn-warning btn-sm">
+                                            Disable
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>-->
+        </div>
+        <div class="card-body">
+            <table class="table table-striped table-hover" id="rDataTable">
+                <thead>
+                <tr>
+                    <th scope="col">Region server</th>
+                    <th scope="col">Replica count</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Keys</th>
+                    <th scope="col">Mem usage</th>
+                    <th scope="col">Get</th>
+                    <th scope="col">Put</th>
+                    <th scope="col">Del</th>
+                </tr>
+                </thead>
+                <tr th:each="r: ${table.getRegionServerCountMap().entrySet()}">
+                    <td><h5 th:text="${r.key}"/></td>
+                    <td><h5 th:text="${r.value.rsCount}"/></td>
+                    <td>
+                        <h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize (r.value.regionMetrics.size)}"/>
+                    </td>
+                    <td><h5 th:text="${r.value.regionMetrics.keys}"/></td>
+                    <td>
+                        <h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize (r.value.regionMetrics.memUsageBytes)}"/>
+                    </td>
+                    <td><h5 th:text="${r.value.regionMetrics.countGet}"/></td>
+                    <td><h5 th:text="${r.value.regionMetrics.countPut}"/></td>
+                    <td><h5 th:text="${r.value.regionMetrics.countDel}"/></td>
+                </tr>
+            </table>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped table-hover" id="regionsDataTable">
+                <thead>
+                <tr>
+                    <th scope="col">Region server</th>
+                    <th scope="col">Region UUID</th>
+                    <th scope="col">Replica Num</th>
+                    <th scope="col">Begin key</th>
+                    <th scope="col">End key</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Keys</th>
+                    <th scope="col">Mem usage</th>
+                    <th scope="col">Get</th>
+                    <th scope="col">Put</th>
+                    <th scope="col">Del</th>
+                    <th scope="col">Disk</th>
+                    <th scope="col">Disk Usage</th>
+                    <th scope="col">Disk Total</th>
+                    <th scope="col">Disk %</th>
+                </tr>
+                </thead>
+                <tr th:each="r : ${table.regionList}">
+                    <td><h5 th:text="${r.hostPort}"/></td>
+                    <td><h5 th:text="${r.uuid}"/></td>
+                    <td><h5 th:text="${r.replicaNum}"/></td>
+                    <td><h5 th:text="${r.beginKey}"/></td>
+                    <td><h5 th:text="${r.endKey}"/></td>
+                    <td>
+                        <h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(r.regionMetrics.size)}"/>
+                    </td>
+                    <td><h5 th:text="${r.regionMetrics.keys}"/></td>
+                    <td>
+                        <h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(r.regionMetrics.memUsageBytes)}"/>
+                    </td>
+                    <td><h5 th:text="${r.regionMetrics.countGet}"/></td>
+                    <td><h5 th:text="${r.regionMetrics.countPut}"/></td>
+                    <td><h5 th:text="${r.regionMetrics.countDel}"/></td>
+                    <td><h5 th:text="${r.regionMetrics.diskName}"/></td>
+                    <td>
+                        <h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize (r.regionMetrics.usageDiskSpace)}"/>
+                    </td>
+                    <td>
+                        <h5 th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize (r.regionMetrics.totalDiskSpace)}"/>
+                    </td>
+                    <td>
+                        <h5 th:text="${#numbers.formatDecimal( (r.regionMetrics.totalDiskSpace > 0 ? r.regionMetrics.usageDiskSpace * 100 / r.regionMetrics.totalDiskSpace : 0.0), 0, 1)}"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <!--<div class="card-body" th:each="entry : ${table.getRegionsGroupedByRS().entrySet()}">
+            <h4 th:text="'Region Server: ' + ${entry.key}" class="mt-4"></h4>
+
+            <table class="table table-striped table-hover" th:attr="data-rsname=${entry.key}">
+                <thead>
+                <tr>
+                    <th>Region UUID</th>
+                    <th>Replica</th>
+                    <th>Begin Key</th>
+                    <th>End Key</th>
+                    <th>Details</th>
+                    <th>Move</th>
+                </tr>
+                </thead>
+                <tbody>
+                &lt;!&ndash; For each region, create two rows: the main row and its details row &ndash;&gt;
+                <th:block th:each="region, iterStat : ${entry.value}">
+                    &lt;!&ndash; Main region row &ndash;&gt;
+                    <tr>
+                        <td th:text="${region.uuid}"></td>
+                        <td th:text="${region.replicaNum}"></td>
+                        <td th:text="${region.beginKey}"></td>
+                        <td th:text="${region.endKey}"></td>
+
+                        &lt;!&ndash; Details Button &ndash;&gt;
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" type="button"
+                                    data-toggle="collapse" th:data-target="'#details__' + ${region.uuid + '_' + region.replicaNum}"
+                                    aria-expanded="false">
+                                Details
+                            </button>
+                        </td>
+
+                        &lt;!&ndash; Move Form &ndash;&gt;
+                        <td>
+                            <form th:action="@{/moveRegion}" method="post" class="d-flex align-items-center gap-2">
+                                <input type="hidden" name="regionId" th:value="${region.uuid + '_' + region.replicaNum}">
+                                <select class="form-control form-control-sm w-auto mr-2" name="targetRsName">
+                                    <option disabled selected>Choose target RS...</option>
+                                    <option th:each="targetRsName : ${table.runningRsNames}"
+                                            th:value="${targetRsName}" th:text="${targetRsName}"></option>
+                                </select>
+                                <input type="hidden" name="returnUrl" th:value="${servletPath} + '?' + ${queryString}">
+                                <button type="submit" class="btn btn-sm btn-primary">Move</button>
+                            </form>
+                        </td>
+                    </tr>
+
+                    &lt;!&ndash; Collapsible Details Row - now within the same th:each block as the region &ndash;&gt;
+                    <tr th:id="'details__' + ${region.uuid + '_' + region.replicaNum}" class="collapse bg-light">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <li><strong>Size:</strong> <span th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(region.regionMetrics.size)}"/></li>
+                                <li><strong>Keys:</strong> <span th:text="${region.regionMetrics.keys}"/></li>
+                                <li><strong>Mem usage:</strong> <span th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(region.regionMetrics.memUsageBytes)}"/></li>
+                                <li><strong>Get:</strong> <span th:text="${region.regionMetrics.countGet}"/></li>
+                                <li><strong>Put:</strong> <span th:text="${region.regionMetrics.countPut}"/></li>
+                                <li><strong>Del:</strong> <span th:text="${region.regionMetrics.countDel}"/></li>
+                                <li><strong>Disk:</strong> <span th:text="${region.regionMetrics.diskName}"/></li>
+                                <li><strong>Disk Usage:</strong> <span th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(region.regionMetrics.usageDiskSpace)}"/></li>
+                                <li><strong>Disk Total:</strong> <span th:text="${T(com.light.atalanta.web.ui.WebUiUtils).toHumanReadebleDiskSize(region.regionMetrics.totalDiskSpace)}"/></li>
+                                <li><strong>Disk %:</strong>
+                                    <span th:text="${#numbers.formatDecimal((region.regionMetrics.totalDiskSpace > 0 ? region.regionMetrics.usageDiskSpace * 100 / region.regionMetrics.totalDiskSpace : 0.0), 0, 1)}"/>%
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </th:block>
+                </tbody>
+            </table>
+        </div>-->
+    </div>
+    <div th:unless="${zkConnectionStatus}" class="alert alert-danger pb-3" role="alert">
+        <h3 th:text="'Can't connect to Zookeeper: ' + ${zkConnectionString}"/>
+    </div>
+</div>
+
+<script th:src="@{/webjars/jquery/3.0.0/jquery.min.js}"></script>
+<script th:src="@{/webjars/popper.js/1.12.9-1/umd/popper.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/4.0.0-2/js/bootstrap.min.js}"></script>
+
+</body>
+</html>

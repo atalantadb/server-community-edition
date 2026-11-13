@@ -1,0 +1,17 @@
+syntax = "proto3";
+package com.light.atalanta.grpc;
+option java_outer_classname = "ATALANTAProto";
+
+/* Table */
+message ProtoTableName {
+  string namespace = 1; // Table namespace
+  string table = 2;     // Table name
+}
+
+/* Region server */
+message ProtoRegionServer {
+    string name = 1;
+    string host = 2;
+    int32 javaPort = 3;
+    int32 coreClientPort = 4;
+}

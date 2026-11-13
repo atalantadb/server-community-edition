@@ -1,0 +1,3 @@
+${project.version}
+${build.timestamp}
+${git.commit.id}

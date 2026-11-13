@@ -1,0 +1,33 @@
+FROM ubuntu:24.04
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        openjdk-17-jre-headless ca-certificates hostname procps iproute2 liblzma5 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/atalanta/rs
+
+# Keep the application license and embedded-source notices in every CE image.
+COPY LICENSE NOTICE THIRD-PARTY-SOURCES.md /opt/atalanta/
+COPY licenses/Apache-2.0.txt \
+     licenses/MIT-prometheus-scraper.txt \
+     licenses/BSD-2-Clause-sslsplit.txt \
+     licenses/BSD-3-Clause-csnappy.txt \
+     licenses/BSD-2-Clause-lz4.txt \
+     licenses/BSD-2-Clause-xxhash.txt \
+     licenses/MIT-libcrc.txt \
+     licenses/ISC-libsodium.txt /opt/atalanta/licenses/
+
+COPY atalanta-rs/target/atalanta-rs.jar ./
+COPY atalanta-docker-compose-ce/atalanta/rs/start-rs.sh ./
+COPY atalanta-docker-compose-ce/atalanta/rs/config/application.yml \
+     atalanta-docker-compose-ce/atalanta/rs/config/region-server-configuration.yml \
+     atalanta-docker-compose-ce/atalanta/rs/config/log4j.properties ./config/
+COPY atalanta-docker-compose-ce/atalanta/core/adb \
+     atalanta-docker-compose-ce/atalanta/core/atalanta.prop \
+     atalanta-docker-compose-ce/atalanta/core/start-core.sh /opt/atalanta/core/
+
+RUN chmod +x ./start-rs.sh ../core/start-core.sh ../core/adb \
+    && mkdir -p /data/rs /data/bkp /data1/rs /data1/bkp /opt/logs
+
+ENTRYPOINT ["/opt/atalanta/rs/start-rs.sh"]

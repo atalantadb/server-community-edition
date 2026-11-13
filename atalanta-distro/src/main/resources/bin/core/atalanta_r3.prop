@@ -1,0 +1,6 @@
+client_port=10033                       // must be equal rs3/region-server-configuration.yml - clientPort
+replication_port=10034                  // must be client_port + 1, port for data replication between DB instances
+rs_port=20003                           // must be equal rs3/region-server-configuration.yml - rsPort
+rf=3                                    // replication factor: must be equal */*.yml - replicationFactor
+health_file_name=atalanta3_health.chk   // must by unique in this directory
+log_level=1                             // range 0 - 7 (be careful to increase)

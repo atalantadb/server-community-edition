@@ -1,0 +1,531 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>ATALANTA Web UI</title>
+
+    <link th:rel="stylesheet" th:href="@{/webjars/bootstrap/${bootstrap.version}/css/bootstrap.min.css}"/>
+</head>
+<body>
+
+<div th:replace="fragments/nav :: nav"></div>
+
+<div class="jumbotron">
+    <div th:if="${zkConnectionStatus}" class="card pb-15">
+        <div class="card-header">
+            <h3>FMaster</h3>
+        </div>
+        <div class="card-body">
+            <h5>Leader: <span class="badge bg-primary" th:text="${fmasterLeader}"/></h5>
+            <h5>Ping: <span class="badge bg-success" th:if="${fmasterPing}">ok</span>
+                <span class="badge bg-danger" th:unless="${fmasterPing}">error</span></h5>
+        </div>
+    </div>
+    <div th:if="${zkConnectionStatus}" class="card pb-3">
+        <div class="card-header">
+            <h3>Leader election</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">url</th>
+                    <th scope="col">role</th>
+                </tr>
+                </thead>
+                <tr th:each="fl : ${fmasterFollowers}">
+                    <td><h5 th:text="${fl.znodeNbr}"/></td>
+                    <td><h5 th:text="${fl.url}"/></td>
+                    <td><h5><span th:if="${fl.leader}" class="badge bg-success" th:text="'leader ' + ${fmasterBuild} + ' date: ' + ${fmasterBuildDate} + ' commit: ' + ${fmasterBuildCommit}"/></h5>
+                        <h5><span th:unless="${fl.leader}" class="badge rounded-pill bg-info text-dark">follower</span></h5></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div th:if="${zkConnectionStatus}" class="card pb-15">
+        <div class="card-header">
+            <h3>Active request(<span class="badge rounded-pill bg-info text-dark" th:text="${fmasterStat.total}"/>)</h3>
+        </div>
+        <div class="card-body" id="adminOps">
+            <div class="card" id="recoveryOps">
+                <div class="card-header" id="headingRecoveryInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'Recovery table: ' + ${fmasterStat.recovery}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#recoveryInfo"
+                                    aria-expanded="false" aria-controls="recoveryInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="recoveryInfo" class="collapse show" aria-labelledby="headingRecoveryInfo" data-parent="#recoveryOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.recoveryMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="createNamespaceOps">
+                <div class="card-header" id="headingCreateNamespaceInfo">
+                    <h5 class="mb-0">
+                        <div>
+                        <span th:text="'Create namespace: ' + ${fmasterStat.createNamespace}"/>
+                        <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                data-target="#createNamespaceInfo"
+                                aria-expanded="false" aria-controls="createNamespaceInfo"
+                                th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="createNamespaceInfo" class="collapse show" aria-labelledby="headingCreateNamespaceInfo" data-parent="#createNamespaceOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.createNamespaceMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="CreateTableOps">
+                <div class="card-header" id="headingCreateTableInfo">
+                    <h5 class="mb-0" >
+                        <div>
+                            <span th:text="'Create table: ' + ${fmasterStat.createTable}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#createTableInfo"
+                                    aria-expanded="false" aria-controls="createTableInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="createTableInfo" class="collapse show" aria-labelledby="headingCreateTableInfo" data-parent="#CreateTableOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.createTableMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="EnableTableOps">
+                <div class="card-header" id="headingEnableTableInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'Enable table: ' + ${fmasterStat.enableTable}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#enableTableInfo"
+                                    aria-expanded="false" aria-controls="enableTableInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="enableTableInfo" class="collapse show" aria-labelledby="headingEnableTableInfo" data-parent="#EnableTableOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.enableTableMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="DisableTableOps">
+                <div class="card-header" id="headingDisableTableInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'Disable table: ' + ${fmasterStat.disableTable}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#disableTableInfo"
+                                    aria-expanded="false" aria-controls="disableTableInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="disableTableInfo" class="collapse show" aria-labelledby="headingDisableTableInfo" data-parent="#DisableTableOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.disableTableMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="DropTableOps">
+                <div class="card-header" id="headingDropTableInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'Drop table: ' + ${fmasterStat.dropTable}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#dropTableInfo"
+                                    aria-expanded="false" aria-controls="dropTableInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="dropTableInfo" class="collapse show" aria-labelledby="headingDropTableInfo" data-parent="#DropTableOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.dropTableMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="MoveRegionOps">
+                <div class="card-header" id="headingMoveRegionInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'Move region: ' + ${fmasterStat.moveRegion}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#moveRegionInfo"
+                                    aria-expanded="false" aria-controls="moveRegionInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="moveRegionInfo" class="collapse show" aria-labelledby="headingMoveRegionInfo" data-parent="#MoveRegionOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.moveRegionMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="SplitRegionOps">
+                <div class="card-header" id="headingSplitRegionInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'Split region: ' + ${fmasterStat.splitRegion}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#splitRegionInfo"
+                                    aria-expanded="false" aria-controls="splitRegionInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="splitRegionInfo" class="collapse show" aria-labelledby="headingSplitRegionInfo" data-parent="#SplitRegionOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.splitRegionMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="StartReplicasRebalanceAsyncOps">
+                <div class="card-header" id="headingStartReplicasRebalanceAsyncInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'StartReplicasRebalanceAsync: ' + ${fmasterStat.startReplicasRebalanceAsync}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#startReplicasRebalanceAsyncInfo"
+                                    aria-expanded="false" aria-controls="startReplicasRebalanceAsyncInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="startReplicasRebalanceAsyncInfo" class="collapse show" aria-labelledby="headingStartReplicasRebalanceAsyncInfo" data-parent="#StartReplicasRebalanceAsyncOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.startReplicasRebalanceAsyncMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="SyncTableReplicasOps">
+                <div class="card-header" id="headingSyncTableReplicasInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'SyncTableReplicas: ' + ${fmasterStat.syncTableReplicas}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#syncTableReplicasInfo"
+                                    aria-expanded="false" aria-controls="syncTableReplicasInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="syncTableReplicasInfo" class="collapse show" aria-labelledby="headingSyncTableReplicasInfo" data-parent="#SyncTableReplicasOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.syncTableReplicasMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="StopReplicasRebalanceOps">
+                <div class="card-header" id="headingStopReplicasRebalanceInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'StopReplicasRebalance: ' + ${fmasterStat.stopReplicasRebalance}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#stopReplicasRebalanceInfo"
+                                    aria-expanded="false" aria-controls="stopReplicasRebalanceInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="stopReplicasRebalanceInfo" class="collapse show" aria-labelledby="headingStopReplicasRebalanceInfo" data-parent="#StopReplicasRebalanceOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.stopReplicasRebalanceMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="StartRegionsRebalanceAsyncOps">
+                <div class="card-header" id="headingStartRegionsRebalanceAsyncInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'StartRegionsRebalanceAsync: ' + ${fmasterStat.startRegionsRebalanceAsync}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#startRegionsRebalanceAsyncInfo"
+                                    aria-expanded="false" aria-controls="startRegionsRebalanceAsyncInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="startRegionsRebalanceAsyncInfo" class="collapse show" aria-labelledby="headingStartRegionsRebalanceAsyncInfo" data-parent="#StartRegionsRebalanceAsyncOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.startRegionsRebalanceAsyncMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="StopRegionsRebalanceOps">
+                <div class="card-header" id="headingStopRegionsRebalanceInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'StopRegionsRebalance: ' + ${fmasterStat.stopRegionsRebalance}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#stopRegionsRebalanceInfo"
+                                    aria-expanded="false" aria-controls="stopRegionsRebalanceInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="stopRegionsRebalanceInfo" class="collapse show" aria-labelledby="headingStopRegionsRebalanceInfo" data-parent="#StopRegionsRebalanceOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.stopRegionsRebalanceMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="CreateSnapshotOps">
+                <div class="card-header" id="headingCreateSnapshotInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'Create snapshot: ' + ${fmasterStat.createSnapshot}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#createSnapshotInfo"
+                                    aria-expanded="false" aria-controls="createSnapshotInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="createSnapshotInfo" class="collapse show" aria-labelledby="headingCreateSnapshotInfo" data-parent="#CreateSnapshotOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.createSnapshotMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="CloneSnapshotOps">
+                <div class="card-header" id="headingCloneSnapshotInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'Clone snapshot: ' + ${fmasterStat.cloneSnapshot}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#cloneSnapshotInfo"
+                                    aria-expanded="false" aria-controls="cloneSnapshotInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="cloneSnapshotInfo" class="collapse show" aria-labelledby="headingCloneSnapshotInfo" data-parent="#CloneSnapshotOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.cloneSnapshotMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="DeleteSnapshotOps">
+                <div class="card-header" id="headingDeleteSnapshotInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'Delete snapshot: ' + ${fmasterStat.deleteSnapshot}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#deleteSnapshotInfo"
+                                    aria-expanded="false" aria-controls="deleteSnapshotInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="deleteSnapshotInfo" class="collapse show" aria-labelledby="headingDeleteSnapshotInfo" data-parent="#DeleteSnapshotOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.deleteSnapshotMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="StartRegionServerOps">
+                <div class="card-header" id="headingStartRegionServerInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'Start region server: ' + ${fmasterStat.startRegionServer}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#startRegionServerInfo"
+                                    aria-expanded="false" aria-controls="startRegionServerInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="startRegionServerInfo" class="collapse show" aria-labelledby="headingStartRegionServerInfo" data-parent="#StartRegionServerOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.startRegionServerMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+            <div class="card" id="StopRegionServerOps">
+                <div class="card-header" id="headingStopRegionServerInfo">
+                    <h5 class="mb-0">
+                        <div>
+                            <span th:text="'Stop region server: ' + ${fmasterStat.stopRegionServer}"/>
+                            <button class="btn btn-sm btn-outline-info float-right" data-toggle="collapse"
+                                    data-target="#stopRegionServerInfo"
+                                    aria-expanded="false" aria-controls="stopRegionServerInfo"
+                                    th:text="details"/>
+                        </div>
+                    </h5>
+                </div>
+                <div id="stopRegionServerInfo" class="collapse show" aria-labelledby="headingStopRegionServerInfo" data-parent="#StopRegionServerOps">
+                    <div class="card-body">
+                        <td colspan="6">
+                            <ul class="mb-0">
+                                <th:block th:each="info: ${fmasterStat.stopRegionServerMsgList}">
+                                    <li><strong><span th:text="${info.name}"/></strong>
+                                        <span th:text="${info.msg}"/>
+                                    </li>
+                                </th:block>
+                            </ul>
+                        </td>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:unless="${zkConnectionStatus}" class="alert alert-danger pb-3" role="alert">
+        <h3 th:text="'Can't connect to Zookeeper: ' + ${zkConnectionString}"/>
+    </div>
+</div>
+
+<script th:src="@{/webjars/jquery/${jquery.version}/jquery.min.js}"></script>
+<script th:src="@{/webjars/popper.js/1.12.9-1/umd/popper.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/${bootstrap.version}/js/bootstrap.min.js}"></script>
+
+</body>
+</html>
